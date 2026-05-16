@@ -6,15 +6,28 @@ API para automação de entrada, classificação e processamento de documentos d
 
 ## Sumário
 
-- [Visão Geral](#visão-geral)
-- [Stack](#stack)
-- [Decisões Arquiteturais (ADRs)](#decisões-arquiteturais-adrs)
-- [Pré-requisitos](#pré-requisitos)
-- [Instalação](#instalação)
-- [Variáveis de Ambiente](#variáveis-de-ambiente)
-- [Rodando o Projeto](#rodando-o-projeto)
-- [Estrutura de Pastas](#estrutura-de-pastas)
-- [Fila: Documentos\_para\_OCR](#fila-documentos_para_ocr)
+- [Keltech — Sistema de Gestão Documental](#keltech--sistema-de-gestão-documental)
+  - [Sumário](#sumário)
+  - [Visão Geral](#visão-geral)
+  - [Stack](#stack)
+  - [Decisões Arquiteturais (ADRs)](#decisões-arquiteturais-adrs)
+  - [Pré-requisitos](#pré-requisitos)
+  - [Instalação](#instalação)
+    - [Com Docker (recomendado)](#com-docker-recomendado)
+    - [Sem Docker (desenvolvimento local)](#sem-docker-desenvolvimento-local)
+      - [Comandos úteis com uv](#comandos-úteis-com-uv)
+  - [Variáveis de Ambiente](#variáveis-de-ambiente)
+  - [Teste unitários](#teste-unitários)
+  - [Rodando o Projeto](#rodando-o-projeto)
+    - [Verificar saúde](#verificar-saúde)
+    - [RabbitMQ Management UI](#rabbitmq-management-ui)
+  - [Estrutura de Pastas](#estrutura-de-pastas)
+  - [Fila: Documentos\_para\_OCR](#fila-documentos_para_ocr)
+    - [Visão geral](#visão-geral-1)
+    - [Configuração da fila](#configuração-da-fila)
+    - [Formato da mensagem](#formato-da-mensagem)
+    - [Publicando uma mensagem (publisher)](#publicando-uma-mensagem-publisher)
+    - [Consumidor](#consumidor)
 
 ---
 
@@ -170,6 +183,14 @@ Copie `.env.example` para `.env` e preencha os valores.
 > Para gerar um `SECRET_KEY` seguro: `openssl rand -hex 32`
 
 ---
+
+## Teste unitários
+
+- Pasta  /tests
+Para rodar basta usar o comando 
+```
+uv run pytest 
+```
 
 ## Rodando o Projeto
 
