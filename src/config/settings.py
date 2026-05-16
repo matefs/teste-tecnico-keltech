@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str
     RABBITMQ_URL: str
+    UPLOADS_DIR: str = "uploads"
 
 
 settings = Settings()

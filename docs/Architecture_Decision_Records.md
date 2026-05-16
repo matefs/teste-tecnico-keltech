@@ -1,3 +1,12 @@
+# ADR 000: Assincronismo
+Contexto: O diagrama original prpunha que um service dependeria de outro.
+
+Decisão: utilizaremos serviços separados, para upload, para importação de xml, para ocr... Cada service terá 2 instâncias rodando no docker: servico_enfileirador e servico_cosumidor.
+
+Alternativas: Fazer todos services backend rodando na mesma instância.
+
+Consequências: Cada serviço só irá utilizar a memória e processamento devidos. 
+
 
 # ADR 001: Unificação da Camada de Persistência (PostgreSQL)
 Contexto: O diagrama original propunha múltiplos bancos de dados para separar metadados, registros de usuários e logs. A volumetria estimada é de 5.000 documentos/dia com arquivos de até 25MB.
