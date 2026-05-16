@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.infrastructure.database.models import Document
+from src.infrastructure.database.models import Document, DocumentContent
 
 
 class DocumentRepository:
@@ -48,3 +48,9 @@ class DocumentRepository:
             select(Document).order_by(Document.created_at.desc()).limit(limit).offset(offset)
         )
         return list(result.scalars().all())
+
+    async def get_document_content(self, document_id: uuid.UUID) -> DocumentContent | None:
+        result = await self._session.execute(
+            select(DocumentContent).where(DocumentContent.document_id == document_id)
+        )
+        return result.scalar_one_or_none()

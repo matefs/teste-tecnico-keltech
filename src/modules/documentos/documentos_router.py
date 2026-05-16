@@ -2,11 +2,13 @@
 from fastapi import APIRouter
 
 from src.modules.documentos.documentos_controller import (
+    get_document_content,
     get_document_stats,
     list_documents,
     upload_document,
 )
 from src.modules.documentos.documentos_schemas import (
+    DocumentContentResponse,
     DocumentListResponse,
     DocumentStatsResponse,
     DocumentUploadResponse,
@@ -40,4 +42,13 @@ router.add_api_route(
     response_model=DocumentListResponse,
     summary="Listar documentos",
     description="Lista todos os documentos enviados com paginação. Ordenados do mais recente ao mais antigo.",
+)
+
+router.add_api_route(
+    "/{document_id}/conteudo",
+    get_document_content,
+    methods=["GET"],
+    response_model=DocumentContentResponse,
+    summary="Resultado OCR do documento",
+    description="Retorna o texto extraído, dados estruturados (CPFs, datas, etc.) e métricas do processamento OCR.",
 )

@@ -8,7 +8,9 @@ from fastapi import HTTPException, UploadFile
 from src.config.settings import settings
 from src.infrastructure.rabbitmq.publisher import publish_document_for_ocr
 from src.modules.documentos.documentos_repository import DocumentRepository
+from src.infrastructure.database.models import DocumentContent
 from src.modules.documentos.documentos_schemas import (
+    DocumentContentResponse,
     DocumentListItem,
     DocumentListResponse,
     DocumentStatsResponse,
@@ -102,6 +104,9 @@ class DocumentQueryService:
         por_status = {status.value: counts_by_status.get(status.value, 0) for status in DocumentStatus}
 
         return DocumentStatsResponse(total=total, por_status=por_status)
+
+    async def get_document_content(self, document_id: uuid.UUID) -> DocumentContent | None:
+        return await self._repository.get_document_content(document_id)
 
     async def list_documents(self, page: int, per_page: int) -> DocumentListResponse:
         offset = (page - 1) * per_page

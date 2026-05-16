@@ -46,3 +46,15 @@ class DocumentListResponse(BaseModel):
 class DocumentStatsResponse(BaseModel):
     total: int
     por_status: dict[str, int]
+
+
+class DocumentContentResponse(BaseModel):
+    id: UUID
+    document_id: UUID
+    raw_text: str | None
+    extracted_data: dict | None
+    confidence_score: float | None
+    processing_time_seconds: float | None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

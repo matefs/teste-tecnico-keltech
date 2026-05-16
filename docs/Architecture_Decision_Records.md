@@ -1,11 +1,19 @@
-# ADR 000: Assincronismo
-Contexto: O diagrama original prpunha que um service dependeria de outro.
+# ADR 000: Arquitetura Orientada a Eventos (Producer-Consumer)
 
-Decisão: utilizaremos serviços separados, para upload, para importação de xml, para ocr... Cada service terá 2 instâncias rodando no docker: servico_enfileirador e servico_cosumidor.
+**Contexto**
+O design inicial previa acoplamento direto entre serviços, onde um componente dependia da disponibilidade imediata de outro para completar a operação. Isso geraria gargalos em processos intensivos como OCR e importação de XML.
 
-Alternativas: Fazer todos services backend rodando na mesma instância.
+**Decisão**
+Adotaremos uma arquitetura de serviços desacoplados por filas. Cada domínio (Upload, XML, OCR) será segregado. Para garantir o isolamento de recursos no Docker, cada serviço operará com duas especializações de instância:
+* **Enfileirador (Producer):** Responsável por receber a requisição, validar e postar a tarefa na fila.
+* **Consumidor (Worker):** Responsável pelo processamento pesado e execução da lógica de negócio.
 
-Consequências: Cada serviço só irá utilizar a memória e processamento devidos. 
+**Alternativas**
+* **Monolito ou Processamento Síncrono:** Executar todas as etapas na mesma instância. Rejeitado devido ao risco de um processo pesado (OCR) derrubar o recebimento de novos uploads.
+
+**Consequências**
+* **Escalabilidade Granular:** Possibilidade de escalar apenas os Workers de OCR sem aumentar a memória do serviço de Upload.
+* **Resiliência:** Se o consumidor falhar, as tarefas permanecem seguras na fila para reprocessamento.
 
 
 # ADR 001: Unificação da Camada de Persistência (PostgreSQL)
