@@ -1,0 +1,2 @@
+# Este arquivo é gerado automaticamente pelo uv. Não edite manualmente.
+# Para atualizar: uv export --no-dev -o requirements.txt
