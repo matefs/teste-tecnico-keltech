@@ -23,3 +23,26 @@ class DocumentUploadResponse(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class DocumentListItem(BaseModel):
+    id: UUID
+    status: DocumentStatus
+    original_filename: str
+    mime_type: str
+    file_size: int
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DocumentListResponse(BaseModel):
+    total: int
+    page: int
+    per_page: int
+    items: list[DocumentListItem]
+
+
+class DocumentStatsResponse(BaseModel):
+    total: int
+    por_status: dict[str, int]

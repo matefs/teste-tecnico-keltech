@@ -8,7 +8,13 @@ from fastapi import HTTPException, UploadFile
 from src.config.settings import settings
 from src.infrastructure.rabbitmq.publisher import publish_document_for_ocr
 from src.modules.documentos.documentos_repository import DocumentRepository
-from src.modules.documentos.documentos_schemas import DocumentUploadResponse
+from src.modules.documentos.documentos_schemas import (
+    DocumentListItem,
+    DocumentListResponse,
+    DocumentStatsResponse,
+    DocumentStatus,
+    DocumentUploadResponse,
+)
 
 _MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024
 _PDF_MAGIC = b"%PDF"
@@ -83,3 +89,28 @@ class DocumentUploadService:
         )
 
         return DocumentUploadResponse.model_validate(document)
+
+
+class DocumentQueryService:
+    def __init__(self, repository: DocumentRepository) -> None:
+        self._repository = repository
+
+    async def get_stats(self) -> DocumentStatsResponse:
+        total = await self._repository.get_total_count()
+        counts_by_status = await self._repository.count_by_status()
+
+        por_status = {status.value: counts_by_status.get(status.value, 0) for status in DocumentStatus}
+
+        return DocumentStatsResponse(total=total, por_status=por_status)
+
+    async def list_documents(self, page: int, per_page: int) -> DocumentListResponse:
+        offset = (page - 1) * per_page
+        total = await self._repository.get_total_count()
+        documents = await self._repository.list_documents(limit=per_page, offset=offset)
+
+        return DocumentListResponse(
+            total=total,
+            page=page,
+            per_page=per_page,
+            items=[DocumentListItem.model_validate(doc) for doc in documents],
+        )
