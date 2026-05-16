@@ -4,6 +4,7 @@ import { readCachedDocuments } from "../lib/storage";
 import type { CachedDocument, DocumentListItem } from "../types";
 import { DocumentsTable } from "../components/DocumentsTable";
 import { LocalDocumentsPanel } from "../components/LocalDocumentsPanel";
+import { PaginationControls } from "../components/PaginationControls";
 
 interface DocumentsPageProps {
   refreshKey: number;
@@ -14,14 +15,22 @@ interface DocumentsState {
   localDocuments: CachedDocument[];
   loading: boolean;
   errorMessage: string | null;
+  totalDocuments: number;
+  currentPage: number;
+  perPage: number;
 }
 
 export function DocumentsPage({ refreshKey }: DocumentsPageProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 10;
   const [state, setState] = useState<DocumentsState>({
     serverDocuments: [],
     localDocuments: [],
     loading: true,
     errorMessage: null,
+    totalDocuments: 0,
+    currentPage: 1,
+    perPage,
   });
 
   useEffect(() => {
@@ -31,7 +40,7 @@ export function DocumentsPage({ refreshKey }: DocumentsPageProps) {
       setState((currentState) => ({ ...currentState, loading: true, errorMessage: null }));
 
       try {
-        const documents = await fetchDocumentList(1, 20);
+        const documents = await fetchDocumentList(currentPage, perPage);
 
         if (!isMounted) {
           return;
@@ -42,6 +51,9 @@ export function DocumentsPage({ refreshKey }: DocumentsPageProps) {
           localDocuments: readCachedDocuments(),
           loading: false,
           errorMessage: null,
+          totalDocuments: documents.total,
+          currentPage: documents.page,
+          perPage: documents.per_page,
         });
       } catch (loadError) {
         if (!isMounted) {
@@ -53,6 +65,9 @@ export function DocumentsPage({ refreshKey }: DocumentsPageProps) {
           localDocuments: readCachedDocuments(),
           loading: false,
           errorMessage: loadError instanceof Error ? loadError.message : "Falha ao carregar documentos.",
+          totalDocuments: 0,
+          currentPage,
+          perPage,
         });
       }
     }
@@ -62,7 +77,21 @@ export function DocumentsPage({ refreshKey }: DocumentsPageProps) {
     return () => {
       isMounted = false;
     };
+  }, [refreshKey, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
   }, [refreshKey]);
+
+  const totalPages = Math.ceil(state.totalDocuments / state.perPage);
+
+  function handlePreviousPage() {
+    setCurrentPage((page) => Math.max(1, page - 1));
+  }
+
+  function handleNextPage() {
+    setCurrentPage((page) => page + 1);
+  }
 
   return (
     <div className="page-stack">
@@ -82,9 +111,18 @@ export function DocumentsPage({ refreshKey }: DocumentsPageProps) {
 
       <DocumentsTable
         title="Documentos do servidor"
-        description="Lista dos documentos recebidos pelo backend com os dados mais recentes." 
+        description="Lista paginada dos documentos recebidos pelo backend."
         items={state.serverDocuments}
         emptyMessage="O backend ainda não retornou documentos para esta consulta."
+      />
+
+      <PaginationControls
+        currentPage={state.currentPage}
+        totalPages={totalPages}
+        totalItems={state.totalDocuments}
+        perPage={state.perPage}
+        onPrevious={handlePreviousPage}
+        onNext={handleNextPage}
       />
 
       <LocalDocumentsPanel documents={state.localDocuments} />

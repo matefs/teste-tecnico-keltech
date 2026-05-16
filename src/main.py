@@ -1,17 +1,15 @@
 # Arquivo: src/main.py
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.infrastructure.database.connection import engine
 from src.infrastructure.database.models import Base
-from src.infrastructure.rabbitmq.connection import close_rabbitmq_connection
-from src.infrastructure.rabbitmq.consumer import start_ocr_consumer
 from src.modules.documentos.documentos_router import router as documentos_router
 
 logging.basicConfig(level=logging.INFO)
@@ -25,15 +23,23 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
 
-    consumer_task = asyncio.create_task(start_ocr_consumer())
-    try:
-        yield
-    finally:
-        consumer_task.cancel()
-        await close_rabbitmq_connection()
+    yield
 
 
 app = FastAPI(title="Keltech Document Management", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(documentos_router)
 

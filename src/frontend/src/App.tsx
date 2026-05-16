@@ -4,7 +4,7 @@ import { LoginScreen } from "./components/LoginScreen";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { UploadPage } from "./pages/UploadPage";
-import { clearSession, getCachedDocumentCount, readSession, saveCachedDocument, saveSession } from "./lib/storage";
+import { clearSession, readSession, saveCachedDocument, saveSession } from "./lib/storage";
 import type { AppRoute, DocumentUploadResponse, SessionData } from "./types";
 
 function normalizeRoute(pathname: string): AppRoute {
@@ -102,10 +102,7 @@ export default function App() {
 
   return (
     <AppShell session={session} currentRoute={route} onNavigate={handleNavigate} onLogout={handleLogout}>
-      <div className="page-slot">
-        <div className="page-slot__meta">Documentos salvos no navegador: {getCachedDocumentCount()}</div>
-        {pageContent}
-      </div>
+      <div className="page-slot">{pageContent}</div>
     </AppShell>
   );
 }

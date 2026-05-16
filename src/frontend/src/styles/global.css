@@ -619,6 +619,39 @@ input {
   color: var(--text-secondary);
 }
 
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(9, 18, 31, 0.68);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.pagination-bar__summary {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.pagination-bar__summary span {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.pagination-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.secondary-button:disabled,
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .page-stack {
   gap: 1rem;
 }
@@ -660,6 +693,15 @@ input {
   .page-content,
   .topbar {
     padding-inline: 1rem;
+  }
+
+  .pagination-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pagination-bar__actions {
+    justify-content: space-between;
   }
 
   .sidebar {

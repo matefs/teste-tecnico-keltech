@@ -1,6 +1,6 @@
 import type { DocumentListResponse, DocumentStatsResponse, DocumentUploadResponse } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 function buildUrl(path: string): string {
   return `${API_BASE_URL}${path}`;
@@ -8,6 +8,18 @@ function buildUrl(path: string): string {
 
 async function extractErrorMessage(response: Response): Promise<string> {
   try {
+    const contentType = response.headers.get("content-type") ?? "";
+
+    if (!contentType.includes("application/json")) {
+      const responseText = await response.text();
+
+      if (responseText.trim().startsWith("<!doctype") || responseText.trim().startsWith("<html")) {
+        return "A API não respondeu JSON. Verifique se o front está apontando para o backend correto.";
+      }
+
+      return responseText || response.statusText || "Erro inesperado ao processar a requisição.";
+    }
+
     const payload = (await response.json()) as { detail?: string; message?: string };
     return payload.detail ?? payload.message ?? response.statusText;
   } catch {

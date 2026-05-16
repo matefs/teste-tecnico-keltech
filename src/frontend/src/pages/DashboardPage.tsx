@@ -1,11 +1,9 @@
 import { FileText, Layers3, ScanText, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchDocumentList, fetchDocumentStats } from "../lib/api";
-import { readCachedDocuments } from "../lib/storage";
-import type { CachedDocument, DocumentListItem, DocumentStatsResponse } from "../types";
+import type { DocumentListItem, DocumentStatsResponse } from "../types";
 import { DocumentsTable } from "../components/DocumentsTable";
 import { KpiCard } from "../components/KpiCard";
-import { LocalDocumentsPanel } from "../components/LocalDocumentsPanel";
 
 interface DashboardPageProps {
   refreshKey: number;
@@ -14,7 +12,6 @@ interface DashboardPageProps {
 interface DashboardState {
   stats: DocumentStatsResponse | null;
   recentDocuments: DocumentListItem[];
-  localDocuments: CachedDocument[];
   loading: boolean;
   errorMessage: string | null;
 }
@@ -23,7 +20,6 @@ export function DashboardPage({ refreshKey }: DashboardPageProps) {
   const [state, setState] = useState<DashboardState>({
     stats: null,
     recentDocuments: [],
-    localDocuments: [],
     loading: true,
     errorMessage: null,
   });
@@ -44,7 +40,6 @@ export function DashboardPage({ refreshKey }: DashboardPageProps) {
         setState({
           stats,
           recentDocuments: documents.items,
-          localDocuments: readCachedDocuments(),
           loading: false,
           errorMessage: null,
         });
@@ -56,7 +51,6 @@ export function DashboardPage({ refreshKey }: DashboardPageProps) {
         setState({
           stats: null,
           recentDocuments: [],
-          localDocuments: readCachedDocuments(),
           loading: false,
           errorMessage: loadError instanceof Error ? loadError.message : "Falha ao carregar o dashboard.",
         });
@@ -74,7 +68,7 @@ export function DashboardPage({ refreshKey }: DashboardPageProps) {
   const processedDocuments = state.stats?.por_status.done ?? 0;
   const queuedDocuments = state.stats?.por_status.queued ?? 0;
   const processingDocuments = state.stats?.por_status.processing ?? 0;
-  const localDocumentsCount = state.localDocuments.length;
+  const errorDocuments = state.stats?.por_status.error ?? 0;
 
   return (
     <div className="page-stack">
@@ -113,19 +107,29 @@ export function DashboardPage({ refreshKey }: DashboardPageProps) {
           tone="green"
         />
         <KpiCard
-          label="Documentos no navegador"
-          value={String(localDocumentsCount)}
-          detail="Itens salvos no localStorage"
+          label="Documentos na fila"
+          value={String(queuedDocuments)}
+          detail="Itens ainda aguardando OCR"
           icon={FileText}
           tone="violet"
         />
         <KpiCard
-          label="Em fila ou processando"
-          value={String(queuedDocuments + processingDocuments)}
-          detail="Pendências atuais do pipeline"
+          label="Em processamento"
+          value={String(processingDocuments)}
+          detail="Pipeline em execução"
           icon={Sparkles}
           tone="amber"
         />
+      </section>
+
+      <section className="panel panel--compact">
+        <div className="section-heading">
+          <div>
+            <h2>Falhas no fluxo</h2>
+            <p>Quantidade de documentos que chegaram ao status de erro.</p>
+          </div>
+        </div>
+        <div className="mini-metric">{errorDocuments}</div>
       </section>
 
       <DocumentsTable
@@ -134,8 +138,6 @@ export function DashboardPage({ refreshKey }: DashboardPageProps) {
         items={state.recentDocuments}
         emptyMessage="Nenhum documento foi encontrado no backend ainda."
       />
-
-      <LocalDocumentsPanel documents={state.localDocuments} />
     </div>
   );
 }
